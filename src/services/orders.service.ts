@@ -10,8 +10,18 @@ export class OrdersService {
     private readonly orderRepository: Repository<Order>,
   ) {}
 
-  findAll() {
-    return this.orderRepository.find({ relations: ['user', 'product'] });
+  async findAll() {
+    const qb = await this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoin('order.user', 'user')
+      .addSelect(['user.id', 'user.name'])
+      .leftJoinAndSelect('order.product', 'product');
+
+    console.log('qb', qb.getSql());
+    const res = await qb.getMany();
+
+    //console.log(res);
+    return res;
   }
 
   findOne(id: number) {
